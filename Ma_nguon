@@ -1,0 +1,54 @@
+import streamlit as st
+import pickle
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Load mô hình hồi quy tuyến tính đã được lưu
+model = pickle.load(open("C:\\PTDL\\Code_PTDL_Nhom13\\CODE\\Linear.pkl", "rb"))
+# load mô hình chuẩn hóa Min-Max từ tệp "minmax_scaler_x.pkl"
+with open("C:\\PTDL\\Code_PTDL_Nhom13\\CODE\\minmax_scaler_x.pkl", "rb") as scaler_file:
+    loaded_minmax_scale = pickle.load(scaler_file)
+
+# Define a function to make predictions
+def predict_salary(
+    BasePay, OvertimePay, OtherPay, Benefits, TotalPayBenefits, Year, JobTitle
+):
+    # Tạo mảng 1 chiều từ input_data
+    input_data = np.array(
+        [
+            BasePay,
+            OvertimePay,
+            OtherPay,
+            Benefits,
+            TotalPayBenefits,
+            Year,
+            0,
+            0,
+            0,
+            0,
+            0,
+        ]
+    )  # InitializeJobTitlevariables to 0
+    if JobTitle == "GENERAL MANAGER-METROPOLITAN TRANSIT AUTHORITY":
+        input_data[6] = 1
+    elif JobTitle == "CAPTAIN III (POLICE DEPARTMENT)":
+        input_data[7] = 1
+    elif JobTitle == "WIRE ROPE CABLE MAINTENANCE MECHANIC":
+        input_data[8] = 1
+    elif JobTitle == "DEPUTY CHIEF OF DEPARTMENT,(FIRE DEPARTMENT)":
+        input_data[9] = 1
+    elif JobTitle == "ASSISTANT DEPUTY CHIEF II":
+        input_data[10] = 1
+
+    # Chuẩn hóa dữ liệu input_data bằng mô hình chuẩn hóa Min-Max
+    input_data_normalized = loaded_minmax_scale.transform(input_data.reshape(1, -1))
+
+    # Dự đoán giá trị bằng mô hình Linear Regressor đã nạp
+    predicted_salary = model.predict(input_data_normalized)
+
+    return predicted_salary[0]
+
+
+# Create a Streamlit web app
+st.title("San Francisco Employee Salary Prediction")
+st.sidebar.header("Input Features")
